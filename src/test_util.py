@@ -1,11 +1,11 @@
 import unittest
 
 from src.htmlnode import LeafNode
-from src.node_conversion import text_node_to_html_node
+from src.util import text_node_to_html_node
 from textnode import TextNode, TextType
 
 
-class TestNodeConversion(unittest.TestCase):
+class TestUtil(unittest.TestCase):
   def test_text_node_to_html_node(self):
     node = TextNode("This is a text node", TextType.TEXT)
     html_node = text_node_to_html_node(node)
