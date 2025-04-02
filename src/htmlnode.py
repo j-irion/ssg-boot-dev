@@ -43,3 +43,5 @@ class ParentNode(HTMLNode):
         if self.props:
             return f"<{self.tag} {self.props_to_html()}>{''.join([child.to_html() for child in self.children])}</{self.tag}>"
         return f"<{self.tag}>{''.join([child.to_html() for child in self.children])}</{self.tag}>"
+
+
