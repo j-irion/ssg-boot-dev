@@ -1,6 +1,6 @@
 import unittest
 
-from htmlnode import HTMLNode, LeafNode
+from htmlnode import HTMLNode, LeafNode, ParentNode
 
 
 class TestHTMLNode(unittest.TestCase):
@@ -34,3 +34,36 @@ class TestLeafNode(unittest.TestCase):
         node = LeafNode("p", None)
         with self.assertRaises(ValueError):
             node.to_html()
+
+
+class TestParentNode(unittest.TestCase):
+    def test_parent_to_html_div(self):
+        child1 = LeafNode("p", "Hello, world!")
+        child2 = LeafNode("p", "Goodbye, world!")
+        node = ParentNode("div", children=[child1, child2])
+        self.assertEqual(node.to_html(), "<div><p>Hello, world!</p><p>Goodbye, world!</p></div>")
+
+    def test_parent_to_html_ul(self):
+        child1 = LeafNode("li", "Item 1")
+        child2 = LeafNode("li", "Item 2")
+        node = ParentNode("ul", children=[child1, child2])
+        self.assertEqual(node.to_html(), "<ul><li>Item 1</li><li>Item 2</li></ul>")
+
+    def test_parent_to_html_no_tag(self):
+        child1 = LeafNode("p", "Hello, world!")
+        child2 = LeafNode("p", "Goodbye, world!")
+        node = ParentNode(None, children=[child1, child2])
+        with self.assertRaises(ValueError):
+            node.to_html()
+
+    def test_parent_to_html_no_children(self):
+        node = ParentNode("div", children=[])
+        with self.assertRaises(ValueError):
+            node.to_html()
+
+    def test_parent_to_html_nested_parents(self):
+        child1 = LeafNode("p", "Hello, world!")
+        child2 = LeafNode("p", "Goodbye, world!")
+        parent = ParentNode("div", children=[child1, child2])
+        node = ParentNode("div", children=[parent])
+        self.assertEqual(node.to_html(), "<div><div><p>Hello, world!</p><p>Goodbye, world!</p></div></div>")
