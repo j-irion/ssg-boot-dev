@@ -1,5 +1,5 @@
 import unittest
-from util import text_node_to_html_node, split_nodes_delimiter, extract_markdown_images, extract_markdown_links, split_nodes_image, split_nodes_link, text_to_textnodes, markdown_to_blocks
+from util import *
 from textnode import TextNode, TextType
 
 
@@ -13,7 +13,7 @@ class TestUtil(unittest.TestCase):
   def test_text_node_to_html_node_bold(self):
     node = TextNode("This is a text node", TextType.BOLD)
     html_node = text_node_to_html_node(node)
-    self.assertEqual(html_node.tag, "strong")
+    self.assertEqual(html_node.tag, "b")
     self.assertEqual(html_node.value, "This is a text node")
 
   def test_text_node_to_html_node_invalid_text_type(self):
@@ -331,6 +331,78 @@ class TestUtil(unittest.TestCase):
     markdown = "Line one of block one.\nLine two of block one.\n\nLine one of block two."
     result = markdown_to_blocks(markdown)
     self.assertListEqual(["Line one of block one.\nLine two of block one.", "Line one of block two."], result)
+
+  def test_identifies_heading_block_correctly(self):
+    block = "# Heading"
+    result = block_to_block_type(block)
+    self.assertEqual(result, BlockType.HEADING)
+
+  def test_identifies_code_block_correctly(self):
+    block = "```\ncode block\n```"
+    result = block_to_block_type(block)
+    self.assertEqual(result, BlockType.CODE)
+
+  def test_identifies_quote_block_correctly(self):
+    block = "> This is a quote\n> Another line of quote"
+    result = block_to_block_type(block)
+    self.assertEqual(result, BlockType.QUOTE)
+
+  def test_identifies_unordered_list_block_correctly(self):
+    block = "- Item 1\n- Item 2\n- Item 3"
+    result = block_to_block_type(block)
+    self.assertEqual(result, BlockType.UNORDERED_LIST)
+
+  def test_identifies_ordered_list_block_correctly(self):
+    block = "1. First item\n2. Second item\n3. Third item"
+    result = block_to_block_type(block)
+    self.assertEqual(result, BlockType.ORDERED_LIST)
+
+  def test_identifies_paragraph_block_correctly(self):
+    block = "This is a paragraph with multiple lines.\nIt continues here."
+    result = block_to_block_type(block)
+    self.assertEqual(result, BlockType.PARAGRAPH)
+
+  def test_handles_malformed_ordered_list_gracefully(self):
+    block = "1. First item\n3. Second item\n2. Third item"
+    result = block_to_block_type(block)
+    self.assertEqual(result, BlockType.PARAGRAPH)
+
+  def test_handles_empty_block_gracefully(self):
+    block = ""
+    result = block_to_block_type(block)
+    self.assertEqual(result, BlockType.PARAGRAPH)
+
+  def test_paragraphs(self):
+      md = """
+  This is **bolded** paragraph
+  text in a p
+  tag here
+
+  This is another paragraph with _italic_ text and `code` here
+
+  """
+
+      node = markdown_to_html_node(md)
+      html = node.to_html()
+      self.assertEqual(
+        html,
+        "<div><p>This is <b>bolded</b> paragraph text in a p tag here</p><p>This is another paragraph with <i>italic</i> text and <code>code</code> here</p></div>",
+      )
+
+  def test_codeblock(self):
+    md = """
+  ```
+  This is text that _should_ remain
+  the **same** even with inline stuff
+  ```
+  """
+
+    node = markdown_to_html_node(md)
+    html = node.to_html()
+    self.assertEqual(
+      "<div><pre><code>This is text that _should_ remain\nthe **same** even with inline stuff\n</code></pre></div>",
+      html,
+    )
 
 
 
