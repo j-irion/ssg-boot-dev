@@ -1,6 +1,7 @@
 from htmlnode import LeafNode
 from src.htmlnode import HTMLNode
 from textnode import TextType, TextNode
+import re
 
 
 def text_node_to_html_node(text_node):
@@ -40,5 +41,72 @@ def split_nodes_delimiter(old_nodes: list[TextNode], delimiter, text_type):
       else:
         new_nodes.append(TextNode(part, TextType.TEXT))
       is_open = not is_open
+
+  return new_nodes
+
+
+def extract_markdown_images(text):
+  images = re.findall(r"!\[([^\[\]]*)\]\(([^\(\)]*)\)", text)
+  return images
+
+def extract_markdown_links(text):
+  links = re.findall(r"(?<!!)\[([^\[\]]*)\]\(([^\(\)]*)\)", text)
+  return links
+
+
+def split_nodes_link(old_nodes):
+  new_nodes = []
+  for node in old_nodes:
+    if node.text_type != TextType.TEXT:
+      new_nodes.append(node)
+      continue
+
+    text = node.text
+    result = []
+    last_end = 0
+
+    for match in re.finditer(r"(?<!!)\[([^\[\]]*)\]\(([^\(\)]*)\)", text):
+      if match.start() > last_end:
+        result.append(TextNode(text[last_end:match.start()], TextType.TEXT))
+
+      link_text = match.group(1)
+      url = match.group(2)
+      result.append(TextNode(link_text, TextType.LINK, url))
+
+      last_end = match.end()
+
+    if last_end < len(text):
+      result.append(TextNode(text[last_end:], TextType.TEXT))
+
+    new_nodes.extend(result)
+
+  return new_nodes
+
+
+def split_nodes_image(old_nodes):
+  new_nodes = []
+  for node in old_nodes:
+    if node.text_type != TextType.TEXT:
+      new_nodes.append(node)
+      continue
+
+    text = node.text
+    result = []
+    last_end = 0
+
+    for match in re.finditer(r"!\[([^\[\]]*)\]\(([^\(\)]*)\)", text):
+      if match.start() > last_end:
+        result.append(TextNode(text[last_end:match.start()], TextType.TEXT))
+
+      alt_text = match.group(1)
+      url = match.group(2)
+      result.append(TextNode(alt_text, TextType.IMAGE, url))
+
+      last_end = match.end()
+
+    if last_end < len(text):
+      result.append(TextNode(text[last_end:], TextType.TEXT))
+
+    new_nodes.extend(result)
 
   return new_nodes
