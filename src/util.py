@@ -2,6 +2,8 @@ from htmlnode import LeafNode, HTMLNode, ParentNode
 from textnode import TextType, TextNode
 import re
 from enum import Enum
+import os
+import shutil
 
 
 def text_node_to_html_node(text_node):
@@ -240,5 +242,33 @@ def markdown_to_html_node(markdown):
       block_nodes.append(html_node)
 
   return ParentNode("div", children=block_nodes)
+
+
+def copy_files_from_to_directory(src_dir, dest_dir):
+  """Recursively copy files from source directory to destination directory.
+
+  First deletes all contents of destination directory for a clean copy.
+
+  Args:
+      src_dir: Source directory path
+      dest_dir: Destination directory path
+  """
+  src_dir = os.path.abspath(src_dir)
+  dest_dir = os.path.abspath(dest_dir)
+  if os.path.exists(dest_dir):
+    shutil.rmtree(dest_dir)
+
+  os.makedirs(dest_dir)
+
+  for item in os.listdir(src_dir):
+    src_path = os.path.join(src_dir, item)
+    dest_path = os.path.join(dest_dir, item)
+
+    if os.path.isdir(src_path):
+      print(f"Copying directory: {src_path} -> {dest_path}")
+      copy_files_from_to_directory(src_path, dest_path)
+    else:
+      print(f"Copying file: {src_path} -> {dest_path}")
+      shutil.copy2(src_path, dest_path)
 
 

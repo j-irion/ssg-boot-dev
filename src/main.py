@@ -1,11 +1,9 @@
-from src.textnode import TextNode, TextType
+from util import copy_files_from_to_directory
 
 def main():
   print("hello world")
+  copy_files_from_to_directory("static", "public")
 
-  text_node = TextNode("Hello", TextType.LINK, "https://www.example.com")
-
-  print(text_node)
 
 
 if __name__ == "__main__":
