@@ -110,3 +110,25 @@ def split_nodes_image(old_nodes):
     new_nodes.extend(result)
 
   return new_nodes
+
+def text_to_textnodes(text):
+  nodes = []
+  if not text:
+    return nodes
+
+  # Split by newlines first
+  lines = text.splitlines()
+  for line in lines:
+    if not line.strip():
+      continue
+    nodes.append(TextNode(line.strip(), TextType.TEXT))
+
+  # Now handle links and images
+  nodes = split_nodes_delimiter(nodes, "**", TextType.BOLD)
+  nodes = split_nodes_delimiter(nodes, "_", TextType.ITALIC)
+  nodes = split_nodes_delimiter(nodes, "`", TextType.CODE)
+  nodes = split_nodes_link(nodes)
+  nodes = split_nodes_image(nodes)
+
+  return nodes
+
