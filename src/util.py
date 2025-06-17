@@ -132,3 +132,18 @@ def text_to_textnodes(text):
 
   return nodes
 
+
+def markdown_to_blocks(markdown):
+  markdown = markdown.strip()
+
+  result = []
+  blocks = re.split(r"\n\n", markdown)
+
+  for block in blocks:
+    lines = block.split("\n")
+    cleaned_lines = [line.strip() for line in lines]
+    cleaned_block = "\n".join(cleaned_lines)
+    if cleaned_block:
+      result.append(cleaned_block)
+
+  return result

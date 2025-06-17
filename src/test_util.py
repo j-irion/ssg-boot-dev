@@ -1,5 +1,5 @@
 import unittest
-from util import text_node_to_html_node, split_nodes_delimiter, extract_markdown_images, extract_markdown_links, split_nodes_image, split_nodes_link, text_to_textnodes
+from util import text_node_to_html_node, split_nodes_delimiter, extract_markdown_images, extract_markdown_links, split_nodes_image, split_nodes_link, text_to_textnodes, markdown_to_blocks
 from textnode import TextNode, TextType
 
 
@@ -271,17 +271,66 @@ class TestUtil(unittest.TestCase):
     text = "This is **text** with an _italic_ word and a `code block` and an ![obi wan image](https://i.imgur.com/fJRm4Vk.jpeg) and a [link](https://boot.dev)"
     nodes = text_to_textnodes(text)
     self.assertListEqual([
-    TextNode("This is ", TextType.TEXT),
-    TextNode("text", TextType.BOLD),
-    TextNode(" with an ", TextType.TEXT),
-    TextNode("italic", TextType.ITALIC),
-    TextNode(" word and a ", TextType.TEXT),
-    TextNode("code block", TextType.CODE),
-    TextNode(" and an ", TextType.TEXT),
-    TextNode("obi wan image", TextType.IMAGE, "https://i.imgur.com/fJRm4Vk.jpeg"),
-    TextNode(" and a ", TextType.TEXT),
-    TextNode("link", TextType.LINK, "https://boot.dev"),
-], nodes)
+        TextNode("This is ", TextType.TEXT),
+        TextNode("text", TextType.BOLD),
+        TextNode(" with an ", TextType.TEXT),
+        TextNode("italic", TextType.ITALIC),
+        TextNode(" word and a ", TextType.TEXT),
+        TextNode("code block", TextType.CODE),
+        TextNode(" and an ", TextType.TEXT),
+        TextNode("obi wan image", TextType.IMAGE, "https://i.imgur.com/fJRm4Vk.jpeg"),
+        TextNode(" and a ", TextType.TEXT),
+        TextNode("link", TextType.LINK, "https://boot.dev"),
+      ], nodes)
+
+  def test_markdown_to_blocks(self):
+      md = """
+  This is **bolded** paragraph
+
+  This is another paragraph with _italic_ text and `code` here
+  This is the same paragraph on a new line
+
+  - This is a list
+  - with items
+  """
+      blocks = markdown_to_blocks(md)
+      self.assertEqual(
+        [
+          "This is **bolded** paragraph",
+          "This is another paragraph with _italic_ text and `code` here\nThis is the same paragraph on a new line",
+          "- This is a list\n- with items",
+        ], blocks
+      )
+
+  def test_splits_markdown_into_blocks_correctly(self):
+    markdown = "This is a block.\n\nThis is another block."
+    result = markdown_to_blocks(markdown)
+    self.assertListEqual(["This is a block.", "This is another block."], result)
+
+  def test_handles_single_block_without_newlines(self):
+    markdown = "This is a single block."
+    result = markdown_to_blocks(markdown)
+    self.assertListEqual(["This is a single block."], result)
+
+  def test_removes_leading_and_trailing_whitespace_from_blocks(self):
+    markdown = "   This is a block.   \n\n   This is another block.   "
+    result = markdown_to_blocks(markdown)
+    self.assertListEqual(["This is a block.", "This is another block."], result)
+
+  def test_handles_empty_markdown_gracefully(self):
+    markdown = ""
+    result = markdown_to_blocks(markdown)
+    self.assertListEqual([], result)
+
+  def test_ignores_consecutive_newlines_between_blocks(self):
+    markdown = "Block one.\n\n\n\nBlock two."
+    result = markdown_to_blocks(markdown)
+    self.assertListEqual(["Block one.", "Block two."], result)
+
+  def test_handles_blocks_with_multiple_lines(self):
+    markdown = "Line one of block one.\nLine two of block one.\n\nLine one of block two."
+    result = markdown_to_blocks(markdown)
+    self.assertListEqual(["Line one of block one.\nLine two of block one.", "Line one of block two."], result)
 
 
 
