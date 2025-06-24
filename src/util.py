@@ -19,7 +19,7 @@ def text_node_to_html_node(text_node):
     case TextType.LINK:
       return LeafNode("a", text_node.text, props={"href": text_node.url})
     case TextType.IMAGE:
-      return LeafNode("img", props={"src": text_node.url})
+      return LeafNode("img", props={"src": text_node.url}, value=text_node.text)
     case _:
       raise ValueError("Invalid text type")
 
@@ -271,4 +271,35 @@ def copy_files_from_to_directory(src_dir, dest_dir):
       print(f"Copying file: {src_path} -> {dest_path}")
       shutil.copy2(src_path, dest_path)
 
+def extract_title(markdown):
+  """Extract the first h1 heading from markdown text as the title."""
+  lines = markdown.splitlines()
+  for line in lines:
+    if line.startswith("# "):
+      return line.lstrip("#").strip()
+  raise Exception(f"No title found in {markdown}")
 
+def generate_page(from_path, template_path, dest_path):
+  """Generate a page from a markdown file using a template.
+
+  Args:
+      from_path: Path to the markdown file.
+      template_path: Path to the HTML template file.
+      dest_path: Path to save the generated HTML file.
+  """
+  print(f"Generating page: {from_path} -> {dest_path} using template {template_path}")
+  with open(from_path, "r") as f:
+    markdown = f.read()
+
+  title = extract_title(markdown)
+  html_node = markdown_to_html_node(markdown)
+
+  with open(template_path, "r") as f:
+    template = f.read()
+
+  print(f"html_node: {html_node.to_html()}")
+
+  html_content = template.replace("{{ Title }}", title).replace("{{ Content }}", html_node.to_html())
+
+  with open(dest_path, "w") as f:
+    f.write(html_content)

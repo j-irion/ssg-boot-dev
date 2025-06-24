@@ -404,6 +404,32 @@ class TestUtil(unittest.TestCase):
       html,
     )
 
+  def test_extracts_title_from_valid_markdown(self):
+    markdown = "# Title\n\nThis is the content."
+    result = extract_title(markdown)
+    self.assertEqual(result, "Title")
+
+  def test_ignores_non_h1_headings(self):
+    markdown = "## Subtitle\n\n# Title\n\nContent."
+    result = extract_title(markdown)
+    self.assertEqual(result, "Title")
+
+  def test_raises_exception_for_missing_title(self):
+    markdown = "## Subtitle\n\nContent."
+    with self.assertRaises(Exception) as context:
+      extract_title(markdown)
+    self.assertEqual(str(context.exception), "No title found in ## Subtitle\n\nContent.")
+
+  def test_handles_markdown_with_only_title(self):
+    markdown = "# Title"
+    result = extract_title(markdown)
+    self.assertEqual(result, "Title")
+
+  def test_handles_title_with_extra_whitespace(self):
+    markdown = "#   Title   \n\nContent."
+    result = extract_title(markdown)
+    self.assertEqual(result, "Title")
+
 
 
 
